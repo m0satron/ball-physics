@@ -1,5 +1,6 @@
-import utils, { randomIntFromRange } from './utils';
-import colors from './colors'
+import { randomIntFromRange, randomColor } from './utils';
+import { Ball } from './Ball'
+import {colors} from './colors'
 
 const canvas = document.querySelector('canvas');
 const context = canvas.getContext('2d');
@@ -15,6 +16,8 @@ const mouse = {
 const gravity = 1;
 const friction = 0.9;
 
+const limit = canvas.width && canvas.height;
+
 addEventListener('mousemove', (event) => {
   mouse.x = event.clientX
   mouse.y = event.clientY
@@ -27,53 +30,32 @@ addEventListener('resize', () => {
   init()
 });
 
-function Ball(x, y, dy, radius, color) {
-  this.x = x;
-  this.y = y;
-  this.dy = dy;
-  this.radius = radius;
-  this.color = color;
 
-  this.draw = function() {
-    context.beginPath();
-    context.arc(
-      this.x,
-      this.y,
-      this.radius,
-      0,
-      Math.PI * 2,
-      false);
-    context.fillStyle = this.color;
-    context.fill();
-    context.closePath();
-  };
-  this.update = function(){
-    if(this.y + this.radius > canvas.height) this.dy = (-this.dy * friction);
-    else this.dy += gravity;
-    console.log(` velocity: ${this.dy}\n`,`position: ${this.y}\n`)
-    this.y += this.dy;
-    this.draw();
-  };
 
-}
-
-// let ball;
 let ballArray = []
 function init() {
-  // ball = new Ball(canvas.width / 2, canvas.height / 2, 1, 30, 'red')
-  for (let i = 0; i < 100; i++) {
-    const x = randomIntFromRange(0, canvas.width);
-    const y = randomIntFromRange(0, canvas.height);
-    ballArray.push(new Ball(x, y, 2, 30, 'red'));
+  
+  for (let i = 0; i < 20; i++) {
+    const properties = {
+      color: randomColor(colors),
+      radius: randomIntFromRange(10, 100)
+    }
+    const startingPoint = {
+      x: randomIntFromRange(properties.radius, canvas.width - properties.radius),
+      y: randomIntFromRange(0, canvas.height - properties.radius),
+      dx: randomIntFromRange(-2, 2),
+      dy: randomIntFromRange(-2, 2),
+      
+    }
+    ballArray.push(new Ball(startingPoint, properties, limit, context, gravity, friction));
   }
 }
 
 function animate() {
   requestAnimationFrame(animate)
   context.clearRect(0, 0, canvas.width, canvas.height)
-  for (let i = 0; i < ballArray.length; i++) {
-    ballArray[i].update();
-  }
+ ballArray.forEach(ball => ball.update())
+
 }
 
 init();

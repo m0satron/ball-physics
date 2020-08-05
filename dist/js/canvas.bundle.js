@@ -86,6 +86,44 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/js/Ball.js":
+/*!************************!*\
+  !*** ./src/js/Ball.js ***!
+  \************************/
+/*! exports provided: Ball */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Ball", function() { return Ball; });
+function Ball(position, properties, limit, context, gravity, friction) {
+  var x = position.x,
+      y = position.y,
+      dx = position.dx,
+      dy = position.dy;
+  var radius = properties.radius,
+      color = properties.color;
+
+  this.draw = function () {
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2, false);
+    context.fillStyle = color;
+    context.fill();
+    context.stroke();
+    context.closePath();
+  };
+
+  this.update = function () {
+    if (y + radius + dy > limit) dy = -dy * friction;else dy += gravity;
+    if (x + radius + dx > limit || x - radius < 0) dx = -dx * friction;
+    x += dx;
+    y += dy;
+    this.draw();
+  };
+}
+
+/***/ }),
+
 /***/ "./src/js/canvas.js":
 /*!**************************!*\
   !*** ./src/js/canvas.js ***!
@@ -97,7 +135,9 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./src/js/utils.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_utils__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _colors__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./colors */ "./src/js/colors.js");
+/* harmony import */ var _Ball__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Ball */ "./src/js/Ball.js");
+/* harmony import */ var _colors__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./colors */ "./src/js/colors.js");
+
 
 
 var canvas = document.querySelector('canvas');
@@ -110,6 +150,7 @@ var mouse = {
 };
 var gravity = 1;
 var friction = 0.9;
+var limit = canvas.width && canvas.height;
 addEventListener('mousemove', function (event) {
   mouse.x = event.clientX;
   mouse.y = event.clientY;
@@ -119,49 +160,30 @@ addEventListener('resize', function () {
   canvas.height = innerHeight;
   init();
 });
-
-function Ball(x, y, dy, radius, color) {
-  this.x = x;
-  this.y = y;
-  this.dy = dy;
-  this.radius = radius;
-  this.color = color;
-
-  this.draw = function () {
-    context.beginPath();
-    context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-    context.fillStyle = this.color;
-    context.fill();
-    context.closePath();
-  };
-
-  this.update = function () {
-    if (this.y + this.radius > canvas.height) this.dy = -this.dy * friction;else this.dy += gravity;
-    console.log(" velocity: ".concat(this.dy, "\n"), "position: ".concat(this.y, "\n"));
-    this.y += this.dy;
-    this.draw();
-  };
-} // let ball;
-
-
 var ballArray = [];
 
 function init() {
-  // ball = new Ball(canvas.width / 2, canvas.height / 2, 1, 30, 'red')
-  for (var i = 0; i < 100; i++) {
-    var x = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomIntFromRange"])(0, canvas.width);
-    var y = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomIntFromRange"])(0, canvas.height);
-    ballArray.push(new Ball(x, y, 2, 30, 'red'));
+  for (var i = 0; i < 20; i++) {
+    var properties = {
+      color: Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomColor"])(_colors__WEBPACK_IMPORTED_MODULE_2__["colors"]),
+      radius: Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomIntFromRange"])(10, 100)
+    };
+    var startingPoint = {
+      x: Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomIntFromRange"])(properties.radius, canvas.width - properties.radius),
+      y: Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomIntFromRange"])(0, canvas.height - properties.radius),
+      dx: Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomIntFromRange"])(-2, 2),
+      dy: Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomIntFromRange"])(-2, 2)
+    };
+    ballArray.push(new _Ball__WEBPACK_IMPORTED_MODULE_1__["Ball"](startingPoint, properties, limit, context, gravity, friction));
   }
 }
 
 function animate() {
   requestAnimationFrame(animate);
   context.clearRect(0, 0, canvas.width, canvas.height);
-
-  for (var i = 0; i < ballArray.length; i++) {
-    ballArray[i].update();
-  }
+  ballArray.forEach(function (ball) {
+    return ball.update();
+  });
 }
 
 init();
